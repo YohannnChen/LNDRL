@@ -1,0 +1,62 @@
+<!---->
+
+<launch>
+  <arg name="use_map_topic"   default="false"/>
+  <arg name="scan_topic"      default="scan"/>
+  <arg name="initial_pose_x"  default="0.0"/>
+  <arg name="initial_pose_y"  default="0.0"/>
+  <arg name="initial_pose_a"  default="0.0"/>
+  <arg name="odom_model_type" default="diff"/>			#使用Probabilistic Robotics的sample_motion_model_odometry 算法 包含odom_alpha_1到odom_alpha4
+  <arg name="tf_prefix" default="tf_p"/>				#
+
+  <arg name="odom_frame_id"   default="odom"/>			#使用odom框架
+  <arg name="base_frame_id"   default="base_link"/>			#使用base_link机器人地盘
+  <arg name="global_frame_id" default="map"/>
+
+  <node pkg="amcl" type="amcl" name="amcl" output="screen" respawn="true">
+    <param name="tf_broadcast" value="true"/>
+    <param name="use_map_topic"             value="$(arg use_map_topic)"/>
+    <param name="tf_prefix"	value="$(arg tf_prefix)"/>
+    <!-- Publish scans from best pose at a max of 10 Hz -->
+    <param name="odom_model_type"           value="$(arg odom_model_type)"/>
+    <param name="odom_alpha5"               value="0.1"/>			#平移相关噪音
+    <param name="gui_publish_rate"          value="10.0"/>			#扫描路径的最大频率
+    <param name="laser_max_beams"           value="60"/>			#最大激光宽度
+    <param name="laser_max_range"           value="12.0"/>			#最大激光范围
+    <param name="min_particles"             value="500"/>    			#粒子最小值500
+    <param name="max_particles"             value="2000"/>  			#粒子最大值2000
+    <param name="kld_err"                   value="0.05"/>			#最大分配偏差%5
+    <param name="kld_z"                     value="0.99"/>			#纵轴标准分位数
+    <param name="odom_alpha1"               value="0.2"/>			#指定旋转部件对旋转操作的期望噪音
+    <param name="odom_alpha2"               value="0.2"/>			#指定平移部件对旋转操作的期望噪音
+    <!-- translation std dev, m -->
+    <param name="odom_alpha3"               value="0.2"/>			#指定平移部件对平移操作的期望噪音
+    <param name="odom_alpha4"               value="0.2"/>			#指定旋转部件对旋转操作的期望噪音
+    <param name="laser_z_hit"               value="0.95"/>			#z_hit的最大重量
+    <param name="laser_z_short"             value="0.1"/>			#z_short的最大重量	
+    <param name="laser_z_max"               value="0.05"/>			#z_max的最大重量
+    <param name="laser_z_rand"              value="0.05"/>			#z_rand的最大重量
+    <param name="laser_sigma_hit"           value="0.2"/>			#z_hit中Gaussian模型的标准偏差
+    <param name="laser_lambda_short"        value="0.1"/>			#z_short中指数衰减常数
+    <param name="laser_model_type"          value="likelihood_field"/>		#使用likelihood_field模型
+    <!-- <param name="laser_model_type" value="beam"/> -->
+    <param name="laser_likelihood_max_dist" value="2.0"/>			
+    <param name="update_min_d"              value="0.01"/>
+    <param name="update_min_a"              value="0.001"/>
+    <param name="odom_frame_id"             value="$(arg odom_frame_id)"/> 	#用$(arg tf_prefix)/$(arg odom_frame_id)作为测距框架
+    <param name="base_frame_id"             value="$(arg base_frame_id)"/> 
+    <param name="global_frame_id"           value="$(arg global_frame_id)"/>
+    <param name="resample_interval"         value="1"/>
+    <!-- Increase tolerance because the computer can get quite busy -->
+    <param name="transform_tolerance"       value="0.1"/>
+    <param name="recovery_alpha_slow"       value="0.001"/>
+    <param name="recovery_alpha_fast"       value="0.1"/>
+    <param name="initial_pose_x"            value="$(arg initial_pose_x)"/>	#初始化位置信息x
+    <param name="initial_pose_y"            value="$(arg initial_pose_y)"/>	#初始化位置信息y
+    <param name="initial_pose_a"            value="$(arg initial_pose_a)"/>	#初始化位置信息a
+    <param name="use_map_topic"             value="true"/>
+    <param name="first_map_only"             value="false"/>
+    <remap from="scan"                      to="$(arg scan_topic)"/>
+    <remap from="map" to="/map"/>
+  </node>
+</launch>
